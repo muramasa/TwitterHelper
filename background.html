@@ -76,16 +76,31 @@
 
         // Click from Browser Action Icon
         chrome.browserAction.onClicked.addListener(function(tab) {
-            chrome.tabs.getAllInWindow(null, function(tabs) {
-                var isOpened = false;
-                var target_url = "https://twitter.com/";
-                for (var i = 0, n = tabs.length; i < n; i++) {
-                    var tab = tabs[i];
+            var isOpened = false;
+            var target_url = "https://twitter.com/";
+            chrome.tabs.getAllInWindow( null, function(tabs) {
+                for (var j = 0, n = tabs.length; j < n && !isOpened; j++) {
+                    var tab = tabs[j];
                     if (tab.url.match(/http(s)?:\/\/twitter.com/)) {
                         chrome.tabs.update(tab.id, {selected: true});
                         scrollToTop(tab.id);
                         isOpened = true;
                         break;
+                    }
+                }
+            });
+
+            chrome.windows.getAll({"populate" : true}, function(windows) {
+                for (var i=0, n = windows.length; i < n && !isOpened; i++) {
+                    var tabs = windows[i].tabs;
+                    for (var j = 0, n = tabs.length; j < n && !isOpened; j++) {
+                        var tab = tabs[j];
+                        if (tab.url.match(/http(s)?:\/\/twitter.com/)) {
+                            chrome.tabs.update(tab.id, {selected: true});
+                            scrollToTop(tab.id);
+                            isOpened = true;
+                            break;
+                        }
                     }
                 }
                 if (!isOpened) {
